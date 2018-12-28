@@ -1,29 +1,20 @@
-import _ from 'lodash';
-
 export default {
   Query: {
-    user: (parent, { id }, { data }) => {
-      return data.users[id];
+    user: async (parent, { id }, { models: { User } }) => {
+      return await User.findAll();
     },
-    me: (parent, args, { me }) => {
-      return me;
+    me: async (parent, args, { me: { id }, models: { User } }) => {
+      return await User.findById(id);
     },
-    users: (parent, args, { data }) => {
-      return _.values(data.users);
-    },
-    messages: (parent, args, { data }) => {
-      return _.values(data.messages);
-    },
-    message: (parent, { id }, { data }) => {
-      return data.messages[id];
+    users: async (parent, args, { models: { User } }) => {
+      return await User.findAll();
     }
   },
   User: {
-    messages: ({ id }, args, { data }) => {
-      return _.chain(data.messages)
-        .values()
-        .filter(m => m.userId === id)
-        .value();
+    messages: async ({ id }, args, { models: { Message } }) => {
+      return await Message.findAll({
+        where: { userId: id }
+      });
     }
   }
 };

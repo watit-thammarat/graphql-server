@@ -1,36 +1,29 @@
-import _ from 'lodash';
-import uuid from 'uuid/v4';
-
 export default {
-  Mutation: {
-    createMessage: (parent, { text }, { me, data }, info) => {
-      const id = uuid();
-      const message = { id, text, userId: me.id };
-      data.messages[id] = message;
-      data.users[me.id].messageIds.push(id);
-      return message;
-    },
-    deleteMessage: (parent, { id }, { data }) => {
-      const { [id]: message, ...otherMessages } = data.messages;
-      if (!message) {
-        return false;
-      }
-      data.messages = otherMessages;
-
-      return true;
-    }
-  },
   Query: {
-    messages: (parent, args, { data }) => {
-      return _.values(data.messages);
+    messages: async (parent, args, { models }) => {
+      return await models.Message.findAll();
     },
-    message: (parent, { id }, { data }) => {
-      return data.messages[id];
+    message: async (parent, { id }, { models }) => {
+      return await models.Message.findById(id);
     }
   },
+
+  Mutation: {
+    createMessage: async (parent, { text }, { me, models }) => {
+      return await models.Message.create({
+        text,
+        userId: me.id
+      });
+    },
+
+    deleteMessage: async (parent, { id }, { models }) => {
+      return await models.Message.destroy({ where: { id } });
+    }
+  },
+
   Message: {
-    user: ({ userId }, args, { me, data }, info) => {
-      return data.users[userId];
+    user: async (message, args, { models }) => {
+      return await models.User.findById(message.userId);
     }
   }
 };
